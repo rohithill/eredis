@@ -46,7 +46,7 @@
  * @date 2016-03-30
  */
 
-#include <eredis-hiredis.h>
+#include <hiredis/hiredis.h>
 
 #ifdef __cplusplus
 extern "C" {
