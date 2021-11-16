@@ -78,7 +78,7 @@ main( int argc, char *argv[] )
   char fmt[32];
   for (j='a', f=0; j<='b'; j++) {
     printf("Batch letter %c\n", j);
-    for (i=0; i<10000;i++) {
+    for (i=0; i<10;i++) {
       sprintf(fmt, "%c%d", j, i );
       if (eredis_w_cmd( e, "SET %s 100", fmt ) != EREDIS_OK)
         ++f;

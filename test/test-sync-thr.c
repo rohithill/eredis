@@ -43,7 +43,7 @@ reader_thr( void *ve )
   char fmt[32];
   for (j='a'; j<='b'; j++) {
     printf("Batch letter %c\n", j);
-    for (i=0; i<10000;i++) {
+    for (i=0; i<1000;i++) {
       sprintf(fmt, "%c%d", j, i );
 
       /* Stress queue - get a new one at each loop */
