@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/EulerianTechnologies/eredis.svg?branch=master)](https://travis-ci.org/EulerianTechnologies/eredis)
 
 # EREDIS
+Note: This fork is modified so as to build with latest hiredis.
 
 Eredis is a C client library built over Hiredis.
 It is lightweight, high performance, reentrant and thread-safe.  
@@ -15,7 +16,6 @@ For any commands:
 * Automatic and seamless fail-over and reconnect
 
 Integration:
-* Embedded Hiredis ensures the full Redis protocol support
 * Reply structure is the Hiredis efficient redisReply
 * Eredis allows you to switch from a single host mode to a an efficient
 shared-nothing/fail-over mode by just activating a new host.
@@ -30,10 +30,11 @@ workload by obviously needing exactly the same bandwidth on each node.
 
 ## Compile
 
+Dependencies required: libev, [hiredis](https://github.com/redis/hiredis)
+
 ```shell
 git clone <eredis_git_url>
 cd eredis
-git submodule update --init
 cmake .
 make
 # optional
