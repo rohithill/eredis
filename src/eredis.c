@@ -44,12 +44,16 @@
 
 #define _EREDIS_C  1
 
+#include <hiredis/hiredis.h>
+#include <hiredis/async.h>
+#include <hiredis/adapters/libev.h>
+
 /* Embedded hiredis */
-#include "async.c"
-#include "hiredis.c"
-#include "net.c"
-#include "read.c"
-#include "sds.c"
+// #include "async.c"
+// #include "hiredis.c"
+// #include "net.c"
+// #include "read.c"
+// #include "sds.c"
 
 /* Other */
 #include <string.h>
@@ -62,7 +66,7 @@
 #include <ev.h>
 
 /* hiredis ev */
-#include "adapters/libev.h"
+// #include "adapters/libev.h"
 
 /* TCP Keep-Alive */
 #define HOST_TCP_KEEPALIVE
@@ -287,7 +291,6 @@ typedef struct eredis_s {
 eredis_new( void )
 {
   eredis_t *e;
-
   e = calloc( 1, sizeof(eredis_t) );
   if (!e) {
     _P_ERR( "eredis_new: failed to allocated memory" );
@@ -450,16 +453,17 @@ eredis_host_add( eredis_t *e, char *target, int port )
   int
 eredis_host_file( eredis_t *e, const char *file )
 {
+  // return 1;
   struct stat st;
-  int fd;
+  FILE* fd;
   int ret = -1, len;
   char *bufo = NULL,*buf;
 
-  fd = open( file, O_RDONLY );
+  fd = fopen( file, "r" );
   if (fd<0)
     return -1;
 
-  if (fstat( fd, &st ))
+  if (fstat( fileno(fd), &st ))
     goto out;
 
   len = st.st_size;
@@ -471,7 +475,7 @@ eredis_host_file( eredis_t *e, const char *file )
     _P_ERR("eredis_host_file: failed to allocate");
     return -1;
   }
-  len = read( fd, buf, len );
+  len = fread( buf, 1, len, fd );
   if (len != st.st_size)
     goto out;
 
@@ -501,7 +505,7 @@ next:
   }
 
 out:
-  close(fd);
+  fclose(fd);
   if (bufo)
     free(bufo);
   return ret;
@@ -517,12 +521,10 @@ out:
 _redis_connect_cb (const redisAsyncContext *c, int status)
 {
   host_t *h = (host_t*) c->data;
-
   H_SET_INIT( h );
 
   if (status == REDIS_OK) {
-    _P_LOG("connect_cb: connected %s", h->target);
-
+    _P_LOG("connect_cb: connected %s:%d", h->target,h->port);
     H_SET_CONNECTED( h );
 
     h->e->hosts_connected ++;
@@ -733,7 +735,6 @@ _eredis_ev_send_cb (struct ev_loop *loop, ev_async *w, int revents)
   (void) loop;
 
   e = (eredis_t*) w->data;
-
   e->send_async_pending = 0;
 
   while ((s = _eredis_wqueue_shift( e, &l ))) {
@@ -741,7 +742,7 @@ _eredis_ev_send_cb (struct ev_loop *loop, ev_async *w, int revents)
       host_t *h = &e->hosts[i];
 
       if (H_IS_CONNECTED(h)) {
-        __redisAsyncCommand( h->async_ctx, NULL, NULL, s, l );
+        redisAsyncFormattedCommand( h->async_ctx, NULL, NULL, s, l );
         nb ++;
       }
     }
